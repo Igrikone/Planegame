@@ -238,9 +238,9 @@
 
         // Upgrades
         const upgrades = {
-            maneuver: { level: 0, cost: 100 },
-            structure: { level: 0, cost: 150 },
-            goods: { level: 0, cost: 200 }
+            maneuver: { level: 0, cost: 100, baseCost: 100 },
+            structure: { level: 0, cost: 150, baseCost: 150 },
+            goods: { level: 0, cost: 200, baseCost: 200 }
         };
 
         // Initialize game
@@ -253,11 +253,11 @@
             isGameOver = false;
             isPaused = false;
             score = 0;
-            speed = 6 + (upgrades.maneuver.level * 0.5);
-            obstacleScoreBonus = 1 + upgrades.maneuver.level;
-            markBonus = upgrades.goods.level * 10;
+            speed = 6;
+            obstacleScoreBonus = 1;
+            markBonus = 0;
             planeAltitude = 270;
-            lives = 1 + upgrades.structure.level;
+            lives = 1;
 
             // Reset UI
             scoreDisplay.textContent = `Score: ${score}`;
@@ -265,6 +265,27 @@
             playerPlane.style.top = planeAltitude + 'px';
             pauseBtn.textContent = "Pause";
             shopElement.style.display = "none";
+
+            // Reset upgrades (except structure which persists through death)
+            upgrades.maneuver.level = 0;
+            upgrades.goods.level = 0;
+            
+            // Reset upgrade costs
+            upgrades.maneuver.cost = upgrades.maneuver.baseCost;
+            upgrades.structure.cost = upgrades.structure.baseCost;
+            upgrades.goods.cost = upgrades.goods.baseCost;
+            
+            // Update UI for upgrades
+            document.getElementById('maneuver-level').textContent = upgrades.maneuver.level;
+            document.getElementById('structure-level').textContent = upgrades.structure.level;
+            document.getElementById('goods-level').textContent = upgrades.goods.level;
+            
+            document.getElementById('maneuver-btn').textContent = `Upgrade (${upgrades.maneuver.cost})`;
+            document.getElementById('structure-btn').textContent = `Upgrade (${upgrades.structure.cost})`;
+            document.getElementById('goods-btn').textContent = `Upgrade (${upgrades.goods.cost})`;
+
+            // Apply structure upgrades (if any)
+            lives += upgrades.structure.level;
 
             // Start game loops
             startObstacleGeneration();
@@ -444,6 +465,12 @@
                 clearIntervals();
                 startObstacleGeneration();
             } else {
+                // Return the cost of all upgrades (except structure) when dying
+                const totalRefund = (upgrades.maneuver.level * upgrades.maneuver.baseCost) + 
+                                   (upgrades.goods.level * upgrades.goods.baseCost);
+                score += totalRefund;
+                scoreDisplay.textContent = `Score: ${score}`;
+                
                 gameOver();
             }
         }
