@@ -209,7 +209,7 @@
         <button class="close-shop" id="close-shop">Back to Game</button>
     </div>
 
-    <div class="instructions">Use Up/Down Arrow keys to control altitude. Click coins on buildings for bonus! Pause = Shop</div>
+    <div class="instructions">Use Up/Down Arrow keys to control altitude. Click with mouse coins on buildings for bonus! Shop in pause.</div>
 
     <script>
         // Game elements
@@ -231,7 +231,7 @@
         let planeAltitude = 270;
         let lives = 1;
         let obstacleScoreBonus = 1;
-        let markScoreBonus = 5;
+        let markScoreBonus = 15;
         let markBonus = 0;
         let activeIntervals = [];
         let isTabVisible = true;
@@ -377,7 +377,7 @@
             return { element: plane };
         }
 
-        // Move obstacle
+        // Move obstacle with extremely tight collision detection
         function moveObstacle(obstacle, speedMultiplier = 1) {
             let position = 1000;
             const moveInterval = setInterval(() => {
@@ -397,40 +397,47 @@
                     obstacle.mark.style.left = (position + (parseInt(obstacle.element.style.width) / 2) - 30) + 'px';
                 }
 
-                // Collision detection
+                // Extremely precise collision detection
                 if (obstacle.element) {
                     const playerRect = playerPlane.getBoundingClientRect();
                     const obstacleRect = obstacle.element.getBoundingClientRect();
                     const gameRect = gameScene.getBoundingClientRect();
 
-                    // Check if player and obstacle are overlapping horizontally
-                    if (playerRect.right > obstacleRect.left + 15 &&
-                        playerRect.left < obstacleRect.right - 15) {
+                    // Calculate exact positions relative to game container
+                    const playerLeft = playerRect.left - gameRect.left;
+                    const playerRight = playerRect.right - gameRect.left;
+                    const playerTop = playerRect.top - gameRect.top;
+                    const playerBottom = playerRect.bottom - gameRect.top;
+                    
+                    const obstacleLeft = obstacleRect.left - gameRect.left;
+                    const obstacleRight = obstacleRect.right - gameRect.left;
+                    const obstacleTop = obstacleRect.top - gameRect.top;
+                    const obstacleBottom = obstacleRect.bottom - gameRect.top;
 
-                        const isBuilding = obstacle.element.classList.contains('skyscraper');
+                    const isBuilding = obstacle.element.classList.contains('skyscraper');
 
-                        if (isBuilding) {
-                            // For buildings, check if player is below the top of the building
-                            const buildingTop = 600 - parseInt(obstacle.element.style.height);
-                            const playerBottom = playerRect.bottom - gameRect.top;
-
-                            if (playerBottom > buildingTop) {
-                                // Collision with building happened
-                                handleCollision();
-                                return;
-                            }
-                        } else {
-                            // For enemy planes, check vertical overlap
-                            const playerTop = playerRect.top - gameRect.top;
-                            const playerBottom = playerRect.bottom - gameRect.top;
-                            const obstacleTop = obstacleRect.top - gameRect.top;
-                            const obstacleBottom = obstacleRect.bottom - gameRect.top;
-
-                            if (playerBottom > obstacleTop && playerTop < obstacleBottom) {
-                                // Collision with enemy plane happened
-                                handleCollision();
-                                return;
-                            }
+                    if (isBuilding) {
+                        // For buildings - require at least 60% width overlap and any vertical overlap
+                        const buildingTop = 600 - parseInt(obstacle.element.style.height);
+                        const overlapWidth = Math.min(playerRight, obstacleRight) - Math.max(playerLeft, obstacleLeft);
+                        const minRequiredOverlap = playerRect.width * 0.6; // 60% of player width must overlap
+                        
+                        if (overlapWidth > minRequiredOverlap && playerBottom > buildingTop) {
+                            handleCollision();
+                            return;
+                        }
+                    } else {
+                        // For enemy planes - require at least 50% overlap in both dimensions
+                        const xOverlap = Math.max(0, Math.min(playerRight, obstacleRight) - Math.max(playerLeft, obstacleLeft));
+                        const yOverlap = Math.max(0, Math.min(playerBottom, obstacleBottom) - Math.max(playerTop, obstacleTop));
+                        
+                        // Require at least 50% overlap in both dimensions
+                        const minXOverlap = playerRect.width * 0.5;
+                        const minYOverlap = playerRect.height * 0.5;
+                        
+                        if (xOverlap > minXOverlap && yOverlap > minYOverlap) {
+                            handleCollision();
+                            return;
                         }
                     }
                 }
@@ -566,8 +573,8 @@
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
                         break;
                     case 'goods':
-                        markBonus += 10;
-                        upgrade.cost = Math.floor(upgrade.cost * 1.2 + 100);
+                        markBonus += 35;
+                        upgrade.cost = Math.floor(upgrade.cost * 1.2 + 200);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
                         break;
                 }
