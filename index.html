@@ -530,17 +530,17 @@
                     case 'maneuver':
                         speed += 0.5;
                         obstacleScoreBonus += 1;
-                        upgrade.cost = Math.floor(upgrade.cost * 1.5);
+                        upgrade.cost = Math.floor(upgrade.cost * 1.2 + 50);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
                         break;
                     case 'structure':
                         lives += 1;
-                        upgrade.cost = Math.floor(upgrade.cost * 1.8);
+                        upgrade.cost = Math.floor(upgrade.cost * 1.2 + 20);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
                         break;
                     case 'goods':
                         markBonus += 10;
-                        upgrade.cost = Math.floor(upgrade.cost * 2);
+                        upgrade.cost = Math.floor(upgrade.cost * 1.2 + 100);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
                         break;
                 }
