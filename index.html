@@ -234,6 +234,7 @@
         let markScoreBonus = 5;
         let markBonus = 0;
         let activeIntervals = [];
+        let isTabVisible = true;
 
         // Upgrades
         const upgrades = {
@@ -285,7 +286,7 @@
 
         // Create skyscraper
         function createSkyscraper() {
-            if (isGameOver || isPaused) return;
+            if (isGameOver || isPaused || !isTabVisible) return;
 
             const height = Math.random() * 200 + 150;
             const width = 40 + Math.random() * 60;
@@ -345,7 +346,7 @@
 
         // Create enemy plane
         function createEnemyPlane() {
-            if (isGameOver || isPaused) return;
+            if (isGameOver || isPaused || !isTabVisible) return;
 
             const plane = document.createElement('div');
             plane.className = 'enemy-plane';
@@ -364,7 +365,7 @@
                     return;
                 }
 
-                if (isPaused) return;
+                if (isPaused || !isTabVisible) return;
 
                 position -= speed * speedMultiplier;
                 if (obstacle.element) {
@@ -478,7 +479,7 @@
 
                 // Animate cloud
                 const cloudInterval = setInterval(() => {
-                    if (isGameOver || isPaused) return;
+                    if (isGameOver || isPaused || !isTabVisible) return;
 
                     let position = parseInt(cloud.style.left);
                     position -= speed * 0.3;
@@ -556,6 +557,18 @@
                 movePlane(planeAltitude + 50);
             } else if (e.code === 'Space' && isGameOver) {
                 initGame();
+            }
+        });
+
+        // Handle tab visibility changes
+        document.addEventListener('visibilitychange', () => {
+            isTabVisible = !document.hidden;
+            if (!isTabVisible) {
+                // Pause the game when tab loses focus
+                if (!isPaused && !isGameOver) {
+                    isPaused = true;
+                    pauseBtn.textContent = "Resume";
+                }
             }
         });
 
