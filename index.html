@@ -93,6 +93,9 @@
             color: darkred;
             box-shadow: 0 0 10px yellow;
             font-size: 24px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
         }
         .cloud {
             position: absolute;
@@ -185,9 +188,11 @@
                 GAME OVER<br>
                 <span style="font-size: 24px">Final Score: <span id="final-score">0</span></span><br>
                 <button id="restart-btn">Fly Again</button>
+                
             </div>
         </div>
     </div>
+
 
     <div id="shop">
         <div class="shop-title">UPGRADE SHOP</div>
@@ -222,8 +227,20 @@
         const restartBtn = document.getElementById('restart-btn');
         const shopElement = document.getElementById('shop');
         const closeShopBtn = document.getElementById('close-shop');
+        // Ingame sounds
+        var coinlooted = new Audio('sounds/Coins soundeffect.ogg');
+        var failsound = new Audio('sounds/Fail Sound Effect.mp3');
+        var crashsound = new Audio('sounds/Prop Plane Crash Sound Effect.mp3');
+        var buyingsound = new Audio('sounds/Buying Sound effect.mp3');
+        var propeller = new Audio('sounds/videoplayback.ogg');
+        var manupgsound = new Audio('sounds/futuristicupgrade.mp3');
+        var drillsound = new Audio('sounds/drill.mp3');
+        var music = new Audio('sounds/Metal Gear Solid 2 Soundtrack - Main Theme.ogg');
 
+        let musicvolume = null;
+        let coinvolume = null;
         // Game state
+
         let isGameOver = false;
         let isPaused = false;
         let score = 0;
@@ -242,9 +259,25 @@
             structure: { level: 0, cost: 150, baseCost: 150 },
             goods: { level: 0, cost: 200, baseCost: 200 }
         };
+        //looping music & propeller
+        var music = new Audio('sounds/Metal Gear Solid 2 Soundtrack - Main Theme.ogg'); 
+        music.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+        music.play();
+        var propeller = new Audio('sounds/videoplayback.ogg'); 
+        propeller.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+        propeller.play();
 
         // Initialize game
         function initGame() {
+            //start music
+            music.play();
+            
             // Clear previous game
             clearIntervals();
             document.querySelectorAll('.skyscraper, .enemy-plane, .special-mark, .cloud').forEach(el => el.remove());
@@ -358,6 +391,8 @@
                         scoreDisplay.textContent = `Score: ${score}`;
                         mark.remove();
                         mark = null;
+                        coinlooted.load();
+                        coinlooted.play();
                     }
                 });
             }
@@ -371,7 +406,7 @@
 
             const plane = document.createElement('div');
             plane.className = 'enemy-plane';
-            plane.style.top = (Math.random() * 100 + 20) + 'px';
+            plane.style.top = (Math.random() * 250) + 'px';
             plane.style.left = '1000px';
             gameScene.appendChild(plane);
             return { element: plane };
@@ -471,6 +506,8 @@
                 // Clear intervals and restart
                 clearIntervals();
                 startObstacleGeneration();
+                crashsound.load();
+                crashsound.play();
             } else {
                 // Return the cost of all upgrades (except structure) when dying
                 const totalRefund = (upgrades.maneuver.level * upgrades.maneuver.baseCost) + 
@@ -533,8 +570,12 @@
         // Game over
         function gameOver() {
             isGameOver = true;
+            failsound.play();
+            crashsound.play();
             finalScoreElement.textContent = score;
             gameOverElement.style.display = 'block';
+            music.pause();
+            propeller.pause();
             clearIntervals();
         }
 
@@ -544,9 +585,13 @@
             if (isPaused) {
                 pauseBtn.textContent = "Resume";
                 shopElement.style.display = "block";
+                music.pause();
+                propeller.pause();
             } else {
                 pauseBtn.textContent = "Pause";
                 shopElement.style.display = "none";
+                music.play();
+                propeller.play();
             }
         }
 
@@ -566,16 +611,24 @@
                         obstacleScoreBonus += 1;
                         upgrade.cost = Math.floor(upgrade.cost * 1.2 + 50);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
+                        manupgsound.load();
+                        manupgsound.play();
+
                         break;
                     case 'structure':
                         lives += 1;
                         upgrade.cost = Math.floor(upgrade.cost * 1.2 + 20);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
+                        drillsound.load();
+                        drillsound.play();
+
                         break;
                     case 'goods':
                         markBonus += 35;
                         upgrade.cost = Math.floor(upgrade.cost * 1.2 + 200);
                         document.getElementById(`${type}-btn`).textContent = `Upgrade (${upgrade.cost})`;
+                        buyingsound.load();
+                        buyingsound.play();
                         break;
                 }
             } else {
