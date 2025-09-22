@@ -384,7 +384,7 @@
                 mark.style.top = (600 - height - 65) + 'px';
                 gameScene.appendChild(mark);
 
-                mark.addEventListener('click', () => {
+                mark.addEventListener('mousedown', () => {
                     if (!isPaused && !isGameOver && mark) {
                         const totalBonus = markScoreBonus + markBonus;
                         score += totalBonus;
@@ -674,4 +674,5 @@
     </script>
 </body>
 </html>
+
 
