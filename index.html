@@ -653,8 +653,7 @@
             if (!isTabVisible) {
                 // Pause the game when tab loses focus
                 if (!isPaused && !isGameOver) {
-                    isPaused = true;
-                    pauseBtn.textContent = "Resume";
+                    togglePause();
                 }
             }
         });
@@ -674,5 +673,6 @@
     </script>
 </body>
 </html>
+
 
 
